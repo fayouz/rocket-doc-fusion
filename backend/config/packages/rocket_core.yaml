@@ -1,0 +1,4 @@
+rocket_core:
+    app_name: Rocket Doc Fusion
+    app_id: doc-fusion
+    token_prefix: rda_
