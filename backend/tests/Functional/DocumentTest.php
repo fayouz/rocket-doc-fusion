@@ -64,7 +64,7 @@ final class DocumentTest extends WebTestCase
         self::assertTrue($build['async']);
         self::assertStringStartsWith('http://api.test/api/onlyoffice/documents/'.$document['id'].'/merge.js?', $build['url']);
         self::assertSame('Société Martin', $build['argument']['values']['client_nom']);
-        self::assertSame('Audit', $build['argument']['sections']['lignes'][0]['designation']);
+        self::assertSame('Audit de l’existant', $build['argument']['sections']['lignes'][0]['designation']);
 
         // The script, as ONLYOFFICE downloads it: the template address is written in it. Unsigned: refused.
         $this->client->request('GET', $build['url']);
@@ -135,7 +135,8 @@ final class DocumentTest extends WebTestCase
 
         $key = $config['document']['key'];
         $callback = $config['editorConfig']['callbackUrl'];
-        HttpMock::on('https://office.example.org/cache/files/', fn () => new MockResponse("PK\x03\x04edited"));
+        // Saved files are given with the public address of ONLYOFFICE, downloaded through its internal one.
+        HttpMock::on(self::OO.'/cache/files/data/k/', fn () => new MockResponse("PK\x03\x04edited"));
 
         // Force save: a new version, same editing session.
         $this->postCallback($callback, ['key' => $key, 'status' => 6, 'url' => 'https://office.example.org/cache/files/data/k/output.docx?md5=x']);
