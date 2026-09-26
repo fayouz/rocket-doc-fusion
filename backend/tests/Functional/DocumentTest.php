@@ -138,7 +138,7 @@ final class DocumentTest extends WebTestCase
         HttpMock::on('https://office.example.org/cache/files/', fn () => new MockResponse("PK\x03\x04edited"));
 
         // Force save: a new version, same editing session.
-        $this->callback($callback, ['key' => $key, 'status' => 6, 'url' => 'https://office.example.org/cache/files/data/k/output.docx?md5=x']);
+        $this->postCallback($callback, ['key' => $key, 'status' => 6, 'url' => 'https://office.example.org/cache/files/data/k/output.docx?md5=x']);
         $this->assertStatus(200);
         self::assertSame(['error' => 0], json_decode((string) $this->client->getResponse()->getContent(), true));
         $saved = $this->reload($document['id']);
@@ -147,15 +147,15 @@ final class DocumentTest extends WebTestCase
         self::assertNotNull($saved->getEditedAt());
 
         // Every editor closed: a new version, and a new key for the next sessions.
-        $this->callback($callback, ['key' => $key, 'status' => 2, 'url' => 'https://office.example.org/cache/files/data/k/output.docx?md5=y']);
+        $this->postCallback($callback, ['key' => $key, 'status' => 2, 'url' => 'https://office.example.org/cache/files/data/k/output.docx?md5=y']);
         $saved = $this->reload($document['id']);
         self::assertSame(3, $saved->getVersion());
         self::assertNotSame($key, $saved->getEditorKey());
 
         // An old session, a file elsewhere than ONLYOFFICE, a forged token: refused.
-        $this->callback($callback, ['key' => $key, 'status' => 2, 'url' => 'https://office.example.org/cache/files/z']);
+        $this->postCallback($callback, ['key' => $key, 'status' => 2, 'url' => 'https://office.example.org/cache/files/z']);
         $this->assertStatus(409);
-        $this->callback($callback, ['key' => $saved->getEditorKey(), 'status' => 2, 'url' => 'https://evil.example.com/cache/files/x']);
+        $this->postCallback($callback, ['key' => $saved->getEditorKey(), 'status' => 2, 'url' => 'https://evil.example.com/cache/files/x']);
         self::assertSame(1, json_decode((string) $this->client->getResponse()->getContent(), true)['error']);
         self::assertSame(3, $this->reload($document['id'])->getVersion());
         $this->client->request('POST', $callback, server: ['CONTENT_TYPE' => 'application/json'], content: json_encode(['token' => (new OnlyOfficeJwt('forged-secret-of-at-least-32-chars'))->sign(['key' => $saved->getEditorKey(), 'status' => 2, 'url' => 'https://office.example.org/cache/files/x'])]));
@@ -279,7 +279,7 @@ final class DocumentTest extends WebTestCase
     }
 
     /** @param array<string, mixed> $body */
-    private function callback(string $url, array $body): void
+    private function postCallback(string $url, array $body): void
     {
         $this->client->request('POST', $url, server: ['CONTENT_TYPE' => 'application/json'], content: json_encode(['token' => $this->jwt()->sign($body)] + $body));
     }
