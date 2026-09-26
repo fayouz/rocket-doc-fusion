@@ -40,7 +40,8 @@ for i in $(seq 1 60); do
   [ "$STATUS" = ready ] && break; [ "$STATUS" = failed ] && break; sleep 2
 done
 DOC=$(curl -fsS "$FRONT/api/documents?title=Martin" -H "Authorization: Bearer $ALICE" -H "Accept: application/json" | jq -r '.[0].id')
-curl -fsS $FRONT/api/documents/$DOC -H "Authorization: Bearer $ALICE" -H "Accept: application/json" | jq -e '.status == "ready" and .version == 1'
+curl -fsS $FRONT/api/documents/$DOC -H "Authorization: Bearer $ALICE" -H "Accept: application/json" | tee document.json | jq -e '.status == "ready" and .version == 1' \
+  || { jq . document.json; exit 1; }
 # The merged DOCX has the values, not the variables
 curl -fsS "$FRONT/api/documents/$DOC/content" -H "Authorization: Bearer $ALICE" -H "Accept: application/json" -o merged.docx
 unzip -p merged.docx word/document.xml > merged.xml
@@ -62,6 +63,7 @@ curl -fsS "$FRONT/api/documents/$NEW/editor" -H "Authorization: Bearer $ALICE" -
 URL=$(curl -fsS "$FRONT/api/documents/$NEW/editor" -H "Authorization: Bearer $ALICE" -H "Accept: application/json" | jq -r .config.document.url)
 $COMPOSE exec -T onlyoffice curl -fsS "$URL" -o /dev/null
 # ONLYOFFICE administration: Community edition, no license file
-curl -fsS $FRONT/api/admin/onlyoffice -H "Authorization: Bearer $TOKEN" | jq -e '.reachable and .edition == "community" and .licenseFile.installed == false'
+curl -fsS $FRONT/api/admin/onlyoffice -H "Authorization: Bearer $TOKEN" | tee onlyoffice.json | jq -e '.reachable and .edition == "community" and .licenseFile.installed == false' \
+  || { jq . onlyoffice.json; exit 1; }
 curl -fsS -X POST $FRONT/api/health/check -H "Authorization: Bearer $TOKEN" \
   | jq -e '[.services[] | select(.id == "onlyoffice") | .status] == ["operational"]'
