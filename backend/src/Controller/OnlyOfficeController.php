@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\UriSigner;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 
@@ -122,7 +123,8 @@ final class OnlyOfficeController extends AbstractController
     private function denyUnlessSigned(Request $request): void
     {
         if (!$this->signer->checkRequest($request)) {
-            throw $this->createAccessDeniedException('Invalid or expired signature.');
+            // Not an access denied of the security layer: that would answer 401 and ask for a user token.
+            throw new AccessDeniedHttpException('Invalid or expired signature.');
         }
     }
 }
