@@ -24,6 +24,8 @@ final class TemplateInspectorTest extends TestCase
         ));
 
         self::assertSame(['prenom', 'ville'], $result['variables']);
+        // Replaced as written in the document.
+        self::assertSame(['prenom' => ['{{ prenom }}'], 'ville' => ['{{ville}}']], $result['literals']);
     }
 
     public function testSectionErrors(): void

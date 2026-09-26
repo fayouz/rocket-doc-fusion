@@ -14,7 +14,8 @@ final class TemplateInspector
     private const WORD = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     /**
-     * @return array{variables: list<string>, sections: list<array{name: string, fields: list<string>}>, errors: list<string>}
+     * @return array{variables: list<string>, sections: list<array{name: string, fields: list<string>}>, errors: list<string>, literals: array<string, list<string>>}
+     *                                                                                                                     literals: how each variable is written ({{nom}}, {{ nom }}…), for the replacement
      *
      * @throws \InvalidArgumentException not a DOCX file
      */
@@ -40,12 +41,12 @@ final class TemplateInspector
             $zip->close();
         }
 
-        $variables = $sections = $errors = [];
+        $variables = $sections = $errors = $literals = [];
         $open = null;
         foreach ($parts as $xml) {
             foreach ($this->paragraphs($xml) as [$text, $row]) {
                 preg_match_all(self::TOKEN, $text, $matches, \PREG_SET_ORDER);
-                foreach ($matches as [, $marker, $name]) {
+                foreach ($matches as [$literal, $marker, $name]) {
                     if ('#' === $marker) {
                         if (null !== $open) {
                             $errors[] = \sprintf('La section « %s » commence avant la fin de « %s ».', $name, $open['name']);
@@ -63,6 +64,7 @@ final class TemplateInspector
                         $sections[$open['name']][$name] = true;
                     } else {
                         $variables[$name] = true;
+                        $literals[$name][$literal] = true;
                     }
                 }
             }
@@ -75,6 +77,7 @@ final class TemplateInspector
             'variables' => array_keys($variables),
             'sections' => array_map(static fn (string $name, array $fields) => ['name' => $name, 'fields' => array_keys($fields)], array_keys($sections), $sections),
             'errors' => array_values(array_unique($errors)),
+            'literals' => array_map(array_keys(...), $literals),
         ];
     }
 

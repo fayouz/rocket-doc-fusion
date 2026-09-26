@@ -5,7 +5,7 @@ namespace App\Fusion;
 /**
  * Document Builder script of a merge. The builder.* lines are commands read by ONLYOFFICE with literal arguments
  * (not JavaScript): the address of the template is written in the script. The values come in "Argument":
- * {values: {name: text}, sections: {name: [{field: text}]}, variables: [names], fields: {section: [names]}}.
+ * {values: {name: text}, sections: {name: [{field: text}]}, variables: [names], literals: {name: ["{{name}}", "{{ name }}"]}}.
  */
 final class MergeScript
 {
@@ -66,7 +66,10 @@ final class MergeScript
         for (var v = 0; v < data.variables.length; v++) {
           var key = data.variables[v];
           var value = text(data.values[key]);
-          doc.SearchAndReplace({ searchString: '{{' + key + '}}', replaceString: value === '' ? ' ' : value, matchCase: true });
+          var literals = data.literals[key] || ['{{' + key + '}}'];
+          for (var l = 0; l < literals.length; l++) {
+            doc.SearchAndReplace({ searchString: literals[l], replaceString: value === '' ? ' ' : value, matchCase: true });
+          }
         }
         JS;
 
@@ -81,10 +84,10 @@ final class MergeScript
     /**
      * Argument of the script: the values of the template variables (missing ones become empty) and of its sections.
      *
-     * @param array{variables: list<string>, sections: list<array{name: string, fields: list<string>}>} $template
-     * @param array<string, mixed>                                                                      $values
+     * @param array{variables: list<string>, sections: list<array{name: string, fields: list<string>}>, literals?: array<string, list<string>>} $template
+     * @param array<string, mixed>                                                                                                             $values
      *
-     * @return array{values: array<string, string>, sections: array<string, list<array<string, string>>>, variables: list<string>}
+     * @return array{values: array<string, string>, sections: array<string, list<array<string, string>>>, variables: list<string>, literals: object}
      */
     public function argument(array $template, array $values): array
     {
@@ -105,7 +108,12 @@ final class MergeScript
             }, $items);
         }
 
-        return ['values' => $scalars, 'sections' => $sections, 'variables' => $template['variables']];
+        $literals = [];
+        foreach ($template['variables'] as $name) {
+            $literals[$name] = $template['literals'][$name] ?? ['{{'.$name.'}}'];
+        }
+
+        return ['values' => $scalars, 'sections' => $sections, 'variables' => $template['variables'], 'literals' => (object) $literals];
     }
 
     private static function scalar(mixed $value): string

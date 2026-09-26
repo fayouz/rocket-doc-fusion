@@ -157,9 +157,11 @@ function limit(value: number | null | undefined) {
               </div>
             </dl>
             <p class="text-muted">
-              Sans licence, ONLYOFFICE Docs fonctionne en édition Community. Pour l’édition Enterprise ou Developer, déposez ici le
-              fichier <code>license.lic</code> fourni par ONLYOFFICE : il est enregistré dans le dossier partagé avec le Document Server,
-              puis appliqué à son redémarrage (<code>docker compose restart onlyoffice</code>).
+              L’édition dépend de l’image du Document Server : Community (<code>onlyoffice/documentserver</code>, sans licence),
+              Enterprise (<code>onlyoffice/documentserver-ee</code>) ou Developer (<code>onlyoffice/documentserver-de</code>), choisie par
+              <code>ONLYOFFICE_IMAGE</code>. Pour ces deux dernières, déposez ici le fichier <code>license.lic</code> fourni par ONLYOFFICE :
+              il est enregistré dans le dossier partagé avec le Document Server, puis appliqué à son redémarrage
+              (<code>docker compose restart onlyoffice</code>).
             </p>
             <p v-if="state.licenseFile.installed" class="text-muted">
               Fichier installé {{ state.licenseFile.updatedAt ? `le ${formatDate(state.licenseFile.updatedAt)}` : '' }}.

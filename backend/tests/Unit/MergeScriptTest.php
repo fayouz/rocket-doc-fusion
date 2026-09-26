@@ -20,12 +20,13 @@ final class MergeScriptTest extends TestCase
     public function testArgumentKeepsTheTemplateVariablesOnly(): void
     {
         $argument = (new MergeScript())->argument(
-            ['variables' => ['nom', 'date', 'vide'], 'sections' => [['name' => 'lignes', 'fields' => ['designation', 'prix']]]],
+            ['variables' => ['nom', 'date', 'vide'], 'sections' => [['name' => 'lignes', 'fields' => ['designation', 'prix']]], 'literals' => ['nom' => ['{{nom}}']]],
             ['nom' => 'Martin', 'date' => 20260926, 'inconnu' => 'x', 'lignes' => [['designation' => 'Audit', 'prix' => 750, 'autre' => 'y'], 'not an item']],
         );
 
         self::assertSame(['nom' => 'Martin', 'date' => '20260926', 'vide' => ''], $argument['values']);
         self::assertSame(['lignes' => [['designation' => 'Audit', 'prix' => '750'], ['designation' => '', 'prix' => '']]], $argument['sections']);
         self::assertSame(['nom', 'date', 'vide'], $argument['variables']);
+        self::assertSame(['nom' => ['{{nom}}'], 'date' => ['{{date}}'], 'vide' => ['{{vide}}']], (array) $argument['literals']);
     }
 }

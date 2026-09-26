@@ -22,7 +22,7 @@ curl -fsS $FRONT/api/ldap/config -H "Authorization: Bearer $TOKEN" | jq -e '.sou
 curl -fsS -X POST $FRONT/api/ldap/test -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{}' \
   | jq -e '.ok and .count >= 2'
 # Documentation site, with the changelog
-curl -fsS $DOCS/changelog | grep -q 'Dernière version'
+curl -fsS $DOCS/changelog | grep -q 'Non publié'
 # Network health checks (also run by the worker's scheduler): the real OpenLDAP
 curl -fsS -X POST $FRONT/api/health/check -H "Authorization: Bearer $TOKEN" > health.json
 jq -e '[.services[] | select(.id == "ldap") | .status] == ["operational"]' health.json || { jq . health.json; exit 1; }
