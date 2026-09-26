@@ -66,8 +66,9 @@ final class DocumentTest extends WebTestCase
         self::assertSame('Société Martin', $build['argument']['values']['client_nom']);
         self::assertSame('Audit de l’existant', $build['argument']['sections']['lignes'][0]['designation']);
 
-        // The script, as ONLYOFFICE downloads it: the template address is written in it. Unsigned: refused.
-        $this->client->request('GET', $build['url']);
+        // The script, as ONLYOFFICE downloads it (with its own JWT in Authorization): the template address is written
+        // in it. Unsigned: refused.
+        $this->client->request('GET', $build['url'], server: ['HTTP_AUTHORIZATION' => 'Bearer '.$this->jwt()->sign(['url' => $build['url']])]);
         $this->assertStatus(200);
         self::assertMatchesRegularExpression('#^builder\.OpenFile\("http://api\.test/api/onlyoffice/documents/'.$document['id'].'/template\?[^"]+"\);#', (string) $this->client->getResponse()->getContent());
         $this->client->request('GET', 'http://api.test/api/onlyoffice/documents/'.$document['id'].'/merge.js');

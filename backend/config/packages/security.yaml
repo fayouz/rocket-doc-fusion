@@ -15,6 +15,11 @@ security:
         dev:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+        # Called by ONLYOFFICE Docs, which sends its own JWT in Authorization: no user authentication there. Every
+        # address is signed (App\OnlyOffice\OnlyOfficeUrls) and the callback checks the JWT of ONLYOFFICE.
+        onlyoffice:
+            pattern: ^/api/onlyoffice/
+            security: false
         login:
             pattern: ^/api/auth/login$
             stateless: true
@@ -41,8 +46,6 @@ security:
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/?$, roles: PUBLIC_ACCESS }
         - { path: ^/api/theme$, roles: PUBLIC_ACCESS }
-        # Called by ONLYOFFICE Docs: signed addresses (templates, merge scripts, versions, editor callback).
-        - { path: ^/api/onlyoffice/, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
