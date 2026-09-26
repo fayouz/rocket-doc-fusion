@@ -250,7 +250,7 @@ final class DocumentTest extends WebTestCase
                 : ['error' => 0, 'version' => '9.4.0.129']));
         });
         HttpMock::on(self::OO.'/cache/files/data/merge-', fn () => new MockResponse(self::MERGED));
-        HttpMock::on('https://office.example.org/cache/files/data/pdf/', fn () => new MockResponse('%PDF-1.7 converted'));
+        HttpMock::on(self::OO.'/cache/files/data/pdf/', fn () => new MockResponse('%PDF-1.7 converted'));
     }
 
     /** @param array<string, string> $server */
