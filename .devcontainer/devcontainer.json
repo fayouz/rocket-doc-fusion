@@ -1,0 +1,40 @@
+{
+  "name": "Rocket Doc Fusion (démo)",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "forwardPorts": [
+    3400,
+    3401,
+    8480
+  ],
+  "portsAttributes": {
+    "3400": {
+      "label": "Rocket Doc Fusion",
+      "onAutoForward": "notify"
+    },
+    "3401": {
+      "label": "Documentation et changelog",
+      "onAutoForward": "notify"
+    },
+    "8480": {
+      "label": "ONLYOFFICE Docs (éditeur)",
+      "onAutoForward": "silent"
+    },
+    "8400": {
+      "label": "API",
+      "onAutoForward": "silent"
+    },
+    "5432": {
+      "onAutoForward": "ignore"
+    }
+  },
+  "postStartCommand": "bash demo/codespaces/start.sh"
+}

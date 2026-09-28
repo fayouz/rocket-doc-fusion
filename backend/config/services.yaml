@@ -1,0 +1,23 @@
+parameters:
+    # Maximum size of a template or of a document (bytes).
+    env(DOC_FUSION_MAX_FILE_SIZE): '20971520'
+    # ONLYOFFICE Docs: address for the browser (editor), address for this API, shared JWT secret, address of this API
+    # as ONLYOFFICE reaches it (templates, merge scripts, documents, editor callback), license file shared with it.
+    env(ONLYOFFICE_PUBLIC_URL): 'http://localhost:8480'
+    env(ONLYOFFICE_INTERNAL_URL): 'http://localhost:8480'
+    env(ONLYOFFICE_JWT_SECRET): ''
+    env(ONLYOFFICE_CALLBACK_URL): 'http://localhost:8400'
+    env(ONLYOFFICE_LICENSE_PATH): '%env(DATA_DIR)%/onlyoffice/license.lic'
+    env(UPDATE_REPOSITORY): 'fayouz/rocket-doc-fusion'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+when@test:
+    services:
+        App\Tests\Support\HttpMock: ~
